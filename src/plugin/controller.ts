@@ -38,7 +38,7 @@ figma.ui.onmessage = (msg) => {
   } else if (msg.type === 'set-target-pos') {
     const {pos} = msg;
     const target = figma.currentPage.selection[0];
-    if (target) {
+    if (target && target.name === 'target') {
       const {x, y} = pos;
       if (x && y) {
         target.x = pos?.x - target.width / 2;
@@ -50,7 +50,7 @@ figma.ui.onmessage = (msg) => {
 
 figma.on('selectionchange', async () => {
   const target = figma.currentPage.selection[0];
-  if (target && target?.parent?.name === 'Theme') {
+  if (target.name === 'target') {
     // setup the game
     console.log('init game...');
 
