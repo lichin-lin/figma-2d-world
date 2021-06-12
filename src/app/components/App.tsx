@@ -1,5 +1,7 @@
 import * as React from 'react';
 import Tracking from '../../plugin/tracking';
+import './../styles/ui.css';
+
 require('dotenv').config();
 declare function require(path: string): any;
 
@@ -17,7 +19,7 @@ const App = ({}) => {
         };
     }, []);
 
-    return <div>hello world</div>;
+    return <div className="w-auto h-8 bg-gray-200 rounded-sm p-2">hello world</div>;
 };
 
 export default App;

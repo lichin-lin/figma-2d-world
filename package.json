@@ -19,6 +19,7 @@
 		"@types/react": "^17.0.0",
 		"@types/react-dom": "^17.0.0",
 		"@types/ua-parser-js": "^0.7.36",
+		"autoprefixer": "^10.2.6",
 		"css-loader": "^5.0.1",
 		"dotenv-webpack": "^7.0.3",
 		"html-webpack-inline-source-plugin": "^0.0.10",
