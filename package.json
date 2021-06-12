@@ -11,6 +11,7 @@
 	"dependencies": {
 		"react": "^17.0.1",
 		"react-dom": "^17.0.1",
+		"rxjs": "^7.1.0",
 		"ua-parser-js": "^0.7.28"
 	},
 	"devDependencies": {

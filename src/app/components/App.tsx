@@ -1,11 +1,16 @@
 import * as React from 'react';
 import Tracking from '../../plugin/tracking';
-import './../styles/ui.css';
+import Resizer from './Resizer';
+import {fromEvent} from 'rxjs';
+import {merge, throttle, throttleTime} from 'rxjs/operators';
 
 require('dotenv').config();
 declare function require(path: string): any;
 
 const App = ({}) => {
+    const handleKeyPress = (e) => {
+        console.log(e);
+    };
     React.useEffect(() => {
         window.onmessage = (event) => {
             const {type, message} = event.data.pluginMessage;
@@ -18,8 +23,17 @@ const App = ({}) => {
             }
         };
     }, []);
-
-    return <div className="w-auto h-8 bg-gray-200 rounded-sm p-2">hello world</div>;
+    React.useEffect(() => {
+        var keyDowns = fromEvent(document, 'keydown');
+        keyDowns.pipe(throttleTime(100)).subscribe((value: KeyboardEvent) => {
+            parent.postMessage({pluginMessage: {type: 'enter-key', key: value.key}}, '*');
+        });
+        // document.addEventListener('keypress', handleKeyPress);
+        // return () => {
+        //     document.removeEventListener('keypress', handleKeyPress);
+        // };
+    }, []);
+    return <Resizer />;
 };
 
 export default App;
