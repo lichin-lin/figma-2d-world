@@ -2,15 +2,12 @@ import * as React from 'react';
 import Tracking from '../../plugin/tracking';
 import Resizer from './Resizer';
 import {fromEvent} from 'rxjs';
-import {merge, throttle, throttleTime} from 'rxjs/operators';
+import {throttleTime} from 'rxjs/operators';
 
 require('dotenv').config();
 declare function require(path: string): any;
 
 const App = ({}) => {
-    const handleKeyPress = (e) => {
-        console.log(e);
-    };
     React.useEffect(() => {
         window.onmessage = (event) => {
             const {type, message} = event.data.pluginMessage;
@@ -28,10 +25,6 @@ const App = ({}) => {
         keyDowns.pipe(throttleTime(100)).subscribe((value: KeyboardEvent) => {
             parent.postMessage({pluginMessage: {type: 'enter-key', key: value.key}}, '*');
         });
-        // document.addEventListener('keypress', handleKeyPress);
-        // return () => {
-        //     document.removeEventListener('keypress', handleKeyPress);
-        // };
     }, []);
     return <Resizer />;
 };
