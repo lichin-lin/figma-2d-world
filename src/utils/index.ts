@@ -3,12 +3,13 @@ import {fromEvent, merge, combineLatest, Observable} from 'rxjs';
 import {distinctUntilChanged, share, filter} from 'rxjs/operators';
 
 const UNIT = 5;
+const RATIO = 1.4;
 export const mappingKeyEvent = (key: string) => {
   switch (key) {
     case 'Up':
       return {
         x: 0,
-        y: -UNIT,
+        y: -UNIT * RATIO,
       };
     case 'ArrowRight':
       return {
@@ -23,12 +24,12 @@ export const mappingKeyEvent = (key: string) => {
     case 'UpRight':
       return {
         x: UNIT,
-        y: -UNIT,
+        y: -UNIT * RATIO,
       };
     case 'UpLeft':
       return {
         x: -UNIT,
-        y: -UNIT,
+        y: -UNIT * RATIO,
       };
     default:
       return {
