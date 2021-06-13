@@ -5,9 +5,10 @@ import {KeyCode} from './../../utils/keycodes';
 import {fromEvent} from 'rxjs';
 import {throttleTime, tap} from 'rxjs/operators';
 import {shortcut} from './../../utils/index';
-import {mappingKeyEvent} from './../../utils/index.ts';
+import {mappingKeyEvent} from './../../utils/index';
 
 import Matter from 'matter-js';
+import {IPropsElement} from '../interface';
 
 require('dotenv').config();
 declare function require(path: string): any;

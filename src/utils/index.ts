@@ -46,13 +46,13 @@ export const shortcut = (shortcut: KeyCode[]): Observable<KeyboardEvent[]> => {
 
   // All KeyboardEvents - emitted only when KeyboardEvent changes (key or type)
   const keyEvents$ = merge(keyDown$, keyUp$).pipe(
-    distinctUntilChanged((a, b) => a.code === b.code && a.type === b.type),
+    distinctUntilChanged((a: KeyboardEvent, b: KeyboardEvent) => a.code === b.code && a.type === b.type),
     share()
   );
 
   // Create KeyboardEvent Observable for specified KeyCode
   const createKeyPressStream = (charCode: KeyCode) =>
-    keyEvents$.pipe(filter((event) => event.code === charCode.valueOf()));
+    keyEvents$.pipe(filter((event: KeyboardEvent) => event.code === charCode.valueOf()));
 
   // Create Event Stream for every KeyCode in shortcut
   const keyCodeEvents$ = shortcut.map((s) => createKeyPressStream(s));
