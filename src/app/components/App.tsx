@@ -12,7 +12,6 @@ import {IPropsElement} from '../interface';
 
 require('dotenv').config();
 declare function require(path: string): any;
-
 let Engine = Matter.Engine;
 let Render = Matter.Render;
 let Body = Matter.Body;
@@ -21,6 +20,10 @@ let Bodies = Matter.Bodies;
 let Composite = Matter.Composite;
 let MouseConstraint = Matter.MouseConstraint;
 let Mouse = Matter.Mouse;
+
+// TODO: rxjs -> key event non block
+// TODO: Hide the canvas, show clock
+// TODO: multiplayer timer
 
 const App = ({}) => {
   const boxRef = React.useRef(null);
@@ -111,14 +114,15 @@ const App = ({}) => {
     };
   }, []);
   React.useEffect(() => {
-    if (targetState) {
-      setInterval(() => {
-        parent.postMessage(
-          {pluginMessage: {type: 'set-target-pos', pos: {x: targetState.position.x, y: targetState.position.y}}},
-          '*'
-        );
-      }, 1000 / 60);
-    }
+    const setPosSyncInterval = setInterval(() => {
+      parent.postMessage(
+        {pluginMessage: {type: 'set-target-pos', pos: {x: targetState?.position?.x, y: targetState?.position?.y}}},
+        '*'
+      );
+    }, 1000 / 60);
+    return () => {
+      clearInterval(setPosSyncInterval);
+    };
   }, [targetState]);
   React.useEffect(() => {
     const keyDowns$ = fromEvent(document, 'keydown')
