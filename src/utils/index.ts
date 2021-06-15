@@ -7,6 +7,7 @@ const RATIO = 1.4;
 export const mappingKeyEvent = (key: string) => {
   switch (key) {
     case 'Up':
+    case 'ArrowUp':
       return {
         x: 0,
         y: -UNIT * RATIO,

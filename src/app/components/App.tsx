@@ -3,7 +3,7 @@ import Tracking from '../../plugin/tracking';
 import Resizer from './Resizer';
 import {KeyCode} from './../../utils/keycodes';
 import {fromEvent} from 'rxjs';
-import {throttleTime, tap} from 'rxjs/operators';
+import {throttleTime, tap, filter, merge, distinctUntilChanged, debounceTime} from 'rxjs/operators';
 import {shortcut} from './../../utils/index';
 import {mappingKeyEvent} from './../../utils/index';
 
@@ -125,40 +125,28 @@ const App = ({}) => {
     };
   }, [targetState]);
   React.useEffect(() => {
-    const keyDowns$ = fromEvent(document, 'keydown')
-      .pipe(throttleTime(0))
+    const keyDowns$ = fromEvent(document, 'keydown').subscribe((value: KeyboardEvent) => {
+      if (value.key === 'ArrowLeft' || value.key === 'ArrowRight') {
+        const _velocity = {
+          x: mappingKeyEvent(value.key)?.x,
+          y: mappingKeyEvent(value.key)?.y,
+        };
+        Body.setVelocity(targetState, _velocity);
+      }
+    });
+    const jump$ = fromEvent(document, 'keydown')
+      .pipe(throttleTime(700))
       .subscribe((value: KeyboardEvent) => {
-        if (value.key === 'ArrowLeft' || value.key === 'ArrowRight')
-          Body.setVelocity(targetState, mappingKeyEvent(value.key));
-      });
-    const jump$ = shortcut([KeyCode.KeyX])
-      .pipe(
-        throttleTime(700),
-        tap(() => console.log('jump'))
-      )
-      .subscribe(() => {
-        Body.setVelocity(targetState, mappingKeyEvent('Up'));
-      });
-    const jumpLeft$ = shortcut([KeyCode.KeyX, KeyCode.ArrowLeft])
-      .pipe(
-        throttleTime(700),
-        tap(() => console.log('jumpLeft'))
-      )
-      .subscribe(() => {
-        Body.setVelocity(targetState, mappingKeyEvent('UpLeft'));
-      });
-    const jumpRight$ = shortcut([KeyCode.KeyX, KeyCode.ArrowRight])
-      .pipe(
-        throttleTime(700),
-        tap(() => console.log('jumpRight'))
-      )
-      .subscribe(() => {
-        Body.setVelocity(targetState, mappingKeyEvent('UpRight'));
+        if (value.key === 'x') {
+          const _velocity = {
+            x: targetState?.velocity?.x + mappingKeyEvent('Up')?.x,
+            y: targetState?.velocity?.y + mappingKeyEvent('Up')?.y,
+          };
+          Body.setVelocity(targetState, _velocity);
+        }
       });
     return () => {
       keyDowns$.unsubscribe();
-      jumpLeft$.unsubscribe();
-      jumpRight$.unsubscribe();
       jump$.unsubscribe();
     };
   }, [targetState]);
