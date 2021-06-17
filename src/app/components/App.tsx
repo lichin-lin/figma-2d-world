@@ -3,7 +3,7 @@ import Tracking from '../../plugin/tracking';
 import Resizer from './Resizer';
 import {KeyCode} from './../../utils/keycodes';
 import {fromEvent} from 'rxjs';
-import {throttleTime, tap, filter, merge, distinctUntilChanged, debounceTime} from 'rxjs/operators';
+import {filter, switchMap, throttleTime} from 'rxjs/operators';
 import {shortcut} from './../../utils/index';
 import {mappingKeyEvent} from './../../utils/index';
 
@@ -32,7 +32,7 @@ const App = ({}) => {
 
   const setupTheme = (elements: IPropsElement[]) => {
     let engine = Engine.create({});
-
+    engine.world.gravity.y = 4;
     const themeElement = elements.find((e) => e.id === 'theme');
     let render = Render.create({
       element: boxRef.current,
@@ -76,6 +76,7 @@ const App = ({}) => {
         render: {
           fillStyle: 'tomato',
         },
+        inertia: Infinity,
       }
     );
 
@@ -125,29 +126,28 @@ const App = ({}) => {
     };
   }, [targetState]);
   React.useEffect(() => {
-    const keyDowns$ = fromEvent(document, 'keydown').subscribe((value: KeyboardEvent) => {
-      if (value.key === 'ArrowLeft' || value.key === 'ArrowRight') {
+    const keyDowns$ = fromEvent(document, 'keydown')
+      .pipe(filter((value: KeyboardEvent) => value.key === 'ArrowLeft' || value.key === 'ArrowRight'))
+      .subscribe((value: KeyboardEvent) => {
         const _velocity = {
           x: mappingKeyEvent(value.key)?.x,
           y: mappingKeyEvent(value.key)?.y,
         };
         Body.setVelocity(targetState, _velocity);
-      }
-    });
-    const jump$ = fromEvent(document, 'keydown')
-      .pipe(throttleTime(700))
-      .subscribe((value: KeyboardEvent) => {
-        if (value.key === 'x') {
-          const _velocity = {
-            x: targetState?.velocity?.x + mappingKeyEvent('Up')?.x,
-            y: targetState?.velocity?.y + mappingKeyEvent('Up')?.y,
-          };
-          Body.setVelocity(targetState, _velocity);
-        }
       });
+    const jumps$ = shortcut([KeyCode.KeyX])
+      .pipe(throttleTime(700))
+      .subscribe(() => {
+        const _velocity = {
+          x: targetState?.velocity?.x + mappingKeyEvent('Up')?.x,
+          y: targetState?.velocity?.y + mappingKeyEvent('Up')?.y,
+        };
+        Body.setVelocity(targetState, _velocity);
+      });
+
     return () => {
       keyDowns$.unsubscribe();
-      jump$.unsubscribe();
+      jumps$.unsubscribe();
     };
   }, [targetState]);
   return (

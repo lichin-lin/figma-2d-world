@@ -37,13 +37,17 @@ figma.ui.onmessage = (msg) => {
     target.x += movement.x;
     target.y += movement.y;
   } else if (msg.type === 'set-target-pos') {
-    const {pos} = msg;
     const target = figma.currentPage.selection[0];
     if (target) {
+      const {pos} = msg;
       const {x, y} = pos;
       if (x && y) {
-        target.x = pos?.x - target.width / 2;
-        target.y = pos?.y - target.height / 2;
+        // set camera
+        if (Math.abs(target.x + target.width / 2 - x) + Math.abs(target.y + target.height / 2 - y) > 1) {
+          figma.viewport.scrollAndZoomIntoView([target]);
+        }
+        target.x = Math.floor(x - target.width / 2);
+        target.y = Math.floor(y - target.height / 2);
       }
     }
   }
@@ -52,6 +56,12 @@ figma.ui.onmessage = (msg) => {
 figma.on('selectionchange', async () => {
   const target = figma.currentPage.selection[0];
   if (target) {
+    figma.viewport.scrollAndZoomIntoView([target]);
+    const ratioView = (figma.viewport.bounds.width * figma.viewport.bounds.height) / (target.width * target.height);
+    if (Math.abs(ratioView - 100) > 5) {
+      const magicZoomInRation = ratioView / 100 - 1;
+      figma.viewport.zoom = figma.viewport.zoom + magicZoomInRation;
+    }
     // setup the game
     console.log('init game...');
 

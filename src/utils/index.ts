@@ -2,8 +2,8 @@ import {KeyCode} from './keycodes';
 import {fromEvent, merge, combineLatest, Observable} from 'rxjs';
 import {distinctUntilChanged, share, filter} from 'rxjs/operators';
 
-const UNIT = 5;
-const RATIO = 1.4;
+const UNIT = 6;
+const RATIO = 2.5;
 export const mappingKeyEvent = (key: string) => {
   switch (key) {
     case 'Up':
