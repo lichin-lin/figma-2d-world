@@ -41,7 +41,6 @@ const App = ({}) => {
   const [jump, setJump] = React.useState(false);
   const setupTheme = (elements: IPropsElement[]) => {
     let engine = Engine.create({});
-    engine.world.gravity.y = 4.5;
     const themeElement = elements.find((e) => e.id === 'theme');
     let render = Render.create({
       element: boxRef.current,
@@ -71,6 +70,7 @@ const App = ({}) => {
         render: {
           fillStyle: '#dcdcdc',
         },
+        friction: 0,
       });
       rectList.push(body);
     });
@@ -81,15 +81,18 @@ const App = ({}) => {
       targetElement.data.width,
       targetElement.data.height,
       {
-        restitution: 0,
+        // restitution: 0,
         render: {
           fillStyle: 'tomato',
         },
         inertia: Infinity,
+        // friction: 0,
+        restitution: 0,
       }
     );
 
     setTargetState(target);
+    engine.world.gravity.y = 1;
     World.add(engine.world, [floor, target]);
     Engine.run(engine);
     Render.run(render);
@@ -133,8 +136,8 @@ const App = ({}) => {
     const logger = setInterval(() => {
       if (status !== 'STOP') {
         const _velocity = {
-          x: mappingKeyEvent(status)?.x,
-          y: targetState?.velocity?.y + mappingKeyEvent(status)?.y,
+          x: mappingKeyEvent(status, targetState.area)?.x,
+          y: targetState?.velocity?.y + mappingKeyEvent(status, targetState.area)?.y,
         };
         Body.setVelocity(targetState, _velocity);
       }
@@ -180,8 +183,8 @@ const App = ({}) => {
       .subscribe(() => {
         setJump(true);
         const _velocity = {
-          x: targetState?.velocity?.x + mappingKeyEvent('Up')?.x,
-          y: targetState?.velocity?.y + mappingKeyEvent('Up')?.y,
+          x: targetState?.velocity?.x + mappingKeyEvent('Up', targetState.area)?.x,
+          y: targetState?.velocity?.y + mappingKeyEvent('Up', targetState.area)?.y,
         };
         Body.setVelocity(targetState, _velocity);
       });

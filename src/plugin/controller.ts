@@ -1,4 +1,3 @@
-import {mappingKeyEvent} from '../utils';
 import Tracking from './tracking';
 import {IPropsElement} from '../app/interface';
 
@@ -30,13 +29,7 @@ figma.ui.onmessage = (msg) => {
   if (msg.type === 'resize') {
     figma.ui.resize(msg.size.w, msg.size.h);
   }
-  if (msg.type === 'enter-key') {
-    const {key} = msg;
-    const movement = mappingKeyEvent(key);
-    const target = figma.currentPage.selection[0];
-    target.x += movement.x;
-    target.y += movement.y;
-  } else if (msg.type === 'set-target-pos') {
+  if (msg.type === 'set-target-pos') {
     const target = figma.currentPage.selection[0];
     if (target && target.name === 'target') {
       const {pos} = msg;

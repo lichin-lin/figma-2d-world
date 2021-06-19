@@ -2,35 +2,27 @@ import {KeyCode} from './keycodes';
 import {fromEvent, merge, combineLatest, Observable} from 'rxjs';
 import {distinctUntilChanged, share, filter} from 'rxjs/operators';
 
-const UNIT = 6;
-const RATIO = 2.5;
-export const mappingKeyEvent = (key: string) => {
+const RATIO = 1.3;
+const MOVERATIO = 0.8;
+export const mappingKeyEvent = (key: string, base: number = 6) => {
+  const _base = Math.sqrt(Math.sqrt(base));
+
   switch (key) {
     case 'Up':
     case 'ArrowUp':
       return {
         x: 0,
-        y: -UNIT * RATIO,
+        y: -_base * RATIO,
       };
     case 'ArrowRight':
       return {
-        x: UNIT,
+        x: _base * MOVERATIO,
         y: 0,
       };
     case 'ArrowLeft':
       return {
-        x: -UNIT,
+        x: -_base * MOVERATIO,
         y: 0,
-      };
-    case 'UpRight':
-      return {
-        x: UNIT,
-        y: -UNIT * RATIO,
-      };
-    case 'UpLeft':
-      return {
-        x: -UNIT,
-        y: -UNIT * RATIO,
       };
     default:
       return {
