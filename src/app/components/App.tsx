@@ -1,10 +1,8 @@
 import * as React from 'react';
 import Tracking from '../../plugin/tracking';
 import Resizer from './Resizer';
-import {KeyCode} from './../../utils/keycodes';
 import {fromEvent} from 'rxjs';
-import {filter, switchMap, throttleTime} from 'rxjs/operators';
-import {shortcut} from './../../utils/index';
+import {filter, throttleTime} from 'rxjs/operators';
 import {mappingKeyEvent} from './../../utils/index';
 
 import Matter from 'matter-js';
@@ -20,19 +18,30 @@ let Bodies = Matter.Bodies;
 let Composite = Matter.Composite;
 let MouseConstraint = Matter.MouseConstraint;
 let Mouse = Matter.Mouse;
+let DEBUG = false;
 
-// TODO: rxjs -> key event non block
-// TODO: Hide the canvas, show clock
-// TODO: multiplayer timer
-
+const KeyUI = ({emoji, text, active}: {emoji: string; text: string; active: boolean}) => {
+  const borderColor = active ? `border-gray-600` : `border-gray-200`;
+  const textColor = active ? `text-gray-600` : `text-gray-400`;
+  return (
+    <div
+      className={`left p-2 w-20 h-12 flex flex-col items-center justify-center rounded-md border-2 ${borderColor} text-xs font-bold ${textColor} duration-200`}
+    >
+      <p>{emoji}</p>
+      <p>{text}</p>
+    </div>
+  );
+};
 const App = ({}) => {
   const boxRef = React.useRef(null);
   const canvasRef = React.useRef(null);
+  const [focus, setFocus] = React.useState(false);
   const [targetState, setTargetState] = React.useState(null);
-
+  const [status, setStatus] = React.useState('STOP');
+  const [jump, setJump] = React.useState(false);
   const setupTheme = (elements: IPropsElement[]) => {
     let engine = Engine.create({});
-    engine.world.gravity.y = 4;
+    engine.world.gravity.y = 4.5;
     const themeElement = elements.find((e) => e.id === 'theme');
     let render = Render.create({
       element: boxRef.current,
@@ -99,6 +108,9 @@ const App = ({}) => {
     Composite.add(engine.world, mouseConstraint);
     render.mouse = mouse;
   };
+  const handleOnClick = () => {
+    setFocus(true);
+  };
   React.useEffect(() => {
     window.onmessage = (event) => {
       const {type, message} = event.data.pluginMessage;
@@ -111,16 +123,40 @@ const App = ({}) => {
       } else if (type === 'init-theme') {
         setTargetState(null);
         setupTheme(message);
+      } else if (type === 'remove-theme') {
+        setTargetState(null);
+        setFocus(false);
       }
     };
   }, []);
+  React.useEffect(() => {
+    const logger = setInterval(() => {
+      if (status !== 'STOP') {
+        const _velocity = {
+          x: mappingKeyEvent(status)?.x,
+          y: targetState?.velocity?.y + mappingKeyEvent(status)?.y,
+        };
+        Body.setVelocity(targetState, _velocity);
+      }
+    }, 1000 / 100);
+    return () => {
+      clearInterval(logger);
+    };
+  }, [status, targetState]);
+  React.useEffect(() => {
+    if (jump) {
+      setTimeout(() => {
+        setJump(false);
+      }, 300);
+    }
+  }, [jump]);
   React.useEffect(() => {
     const setPosSyncInterval = setInterval(() => {
       parent.postMessage(
         {pluginMessage: {type: 'set-target-pos', pos: {x: targetState?.position?.x, y: targetState?.position?.y}}},
         '*'
       );
-    }, 1000 / 60);
+    }, 1000 / 100);
     return () => {
       clearInterval(setPosSyncInterval);
     };
@@ -129,15 +165,20 @@ const App = ({}) => {
     const keyDowns$ = fromEvent(document, 'keydown')
       .pipe(filter((value: KeyboardEvent) => value.key === 'ArrowLeft' || value.key === 'ArrowRight'))
       .subscribe((value: KeyboardEvent) => {
-        const _velocity = {
-          x: mappingKeyEvent(value.key)?.x,
-          y: mappingKeyEvent(value.key)?.y,
-        };
-        Body.setVelocity(targetState, _velocity);
+        setStatus(value.key);
       });
-    const jumps$ = shortcut([KeyCode.KeyX])
-      .pipe(throttleTime(700))
+    const keyUps$ = fromEvent(document, 'keyup')
+      .pipe(filter((value: KeyboardEvent) => value.key === 'ArrowLeft' || value.key === 'ArrowRight'))
       .subscribe(() => {
+        setStatus('STOP');
+      });
+    const jumps$ = fromEvent(document, 'keydown')
+      .pipe(
+        filter((value: KeyboardEvent) => value.key === 'x'),
+        throttleTime(600)
+      )
+      .subscribe(() => {
+        setJump(true);
         const _velocity = {
           x: targetState?.velocity?.x + mappingKeyEvent('Up')?.x,
           y: targetState?.velocity?.y + mappingKeyEvent('Up')?.y,
@@ -147,12 +188,43 @@ const App = ({}) => {
 
     return () => {
       keyDowns$.unsubscribe();
+      keyUps$.unsubscribe();
       jumps$.unsubscribe();
     };
   }, [targetState]);
+
   return (
-    <React.Fragment>
+    <div className="wrapper w-full h-full relative overflow-hidden">
+      <div className="flex space-x-2 w-full h-full bg-white items-center justify-center" onClick={handleOnClick}>
+        {targetState && focus ? (
+          <React.Fragment>
+            <KeyUI emoji={'👈'} text="Left(←)" active={status === 'ArrowLeft'} />
+            <KeyUI emoji={'🦵'} text="Jump(x)" active={jump} />
+            <KeyUI emoji={'👉'} text="Right(→)" active={status === 'ArrowRight'} />
+          </React.Fragment>
+        ) : (
+          <div className="text-gray-600 text-sm text-center">
+            {targetState ? (
+              <div>✌️ Now, click on this plugin window to start!</div>
+            ) : (
+              <div>
+                ☝️ Select element named:{' '}
+                <b>
+                  <i>target</i>
+                </b>{' '}
+                on Canvas
+                <br />
+                <p className="text-gray-600 text-xs">
+                  <i>(you will need to re-select if already seleted)</i>
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      {/* for debug usage */}
       <div
+        className="debugger absolute"
         ref={boxRef}
         style={{
           width: 300,
@@ -161,8 +233,8 @@ const App = ({}) => {
       >
         <canvas ref={canvasRef} />
       </div>
-      <Resizer />
-    </React.Fragment>
+      {DEBUG && <Resizer />}
+    </div>
   );
 };
 

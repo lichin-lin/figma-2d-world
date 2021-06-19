@@ -2,7 +2,7 @@ import {mappingKeyEvent} from '../utils';
 import Tracking from './tracking';
 import {IPropsElement} from '../app/interface';
 
-figma.showUI(__html__, {width: 300, height: 150});
+figma.showUI(__html__, {width: 320, height: 100});
 
 // init: Setting tracking info / fetch storage
 const USER_DATA_ENDPOINT = 'user_data';
@@ -38,7 +38,7 @@ figma.ui.onmessage = (msg) => {
     target.y += movement.y;
   } else if (msg.type === 'set-target-pos') {
     const target = figma.currentPage.selection[0];
-    if (target) {
+    if (target && target.name === 'target') {
       const {pos} = msg;
       const {x, y} = pos;
       if (x && y) {
@@ -55,16 +55,27 @@ figma.ui.onmessage = (msg) => {
 
 figma.on('selectionchange', async () => {
   const target = figma.currentPage.selection[0];
-  if (target) {
-    figma.viewport.scrollAndZoomIntoView([target]);
-    const ratioView = (figma.viewport.bounds.width * figma.viewport.bounds.height) / (target.width * target.height);
-    if (Math.abs(ratioView - 100) > 5) {
-      const magicZoomInRation = ratioView / 100 - 1;
+  if (target && target.name === 'target') {
+    const getRatio = (target) =>
+      (figma.viewport.bounds.width * figma.viewport.bounds.height) / (target.width * target.height);
+    let ratioView = getRatio(target);
+    let counter = 0;
+    // recursive set zooming params, since hard to set it at once.
+    while (Math.abs(ratioView - 100) > 5 && counter < 5) {
+      counter += 1;
+      let magicZoomInRation = 0;
+      if (ratioView < 100) {
+        magicZoomInRation = Math.sqrt(100 / ratioView) * -1;
+      } else {
+        magicZoomInRation = Math.sqrt(ratioView / 100) - 1;
+      }
       figma.viewport.zoom = figma.viewport.zoom + magicZoomInRation;
+      ratioView = getRatio(target);
     }
+    figma.viewport.scrollAndZoomIntoView([target]);
+
     // setup the game
     console.log('init game...');
-
     // Theme
     const theme = target?.parent as FrameNode;
     const themeElement: IPropsElement = {
@@ -89,7 +100,6 @@ figma.on('selectionchange', async () => {
         },
       })
     );
-
     // Target
     const targetElement: IPropsElement = {
       id: 'target',
@@ -104,5 +114,10 @@ figma.on('selectionchange', async () => {
       type: 'init-theme',
       message: [themeElement, targetElement, ...allRectElement],
     });
+    return;
   }
+  figma.ui.postMessage({
+    type: 'remove-theme',
+    message: [],
+  });
 });
