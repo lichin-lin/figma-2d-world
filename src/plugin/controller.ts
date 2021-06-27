@@ -1,5 +1,6 @@
 import Tracking from './tracking';
 import {IPropsElement} from '../app/interface';
+import {rotateOriginXY} from '../app/utils';
 
 figma.showUI(__html__, {width: 320, height: 100});
 
@@ -81,17 +82,26 @@ figma.on('selectionchange', async () => {
       },
     };
     // Rect
-    const allRect = target?.parent.findAll((element) => element.name === 'rect');
+    const allRect = target?.parent.findChildren(
+      (element) => element.name.includes('rect') || element.name.includes('Rect')
+    );
     const allRectElement = allRect.map(
-      (rect: RectangleNode, id): IPropsElement => ({
-        id: `rect-${id}`,
-        data: {
-          width: rect.width,
-          height: rect.height,
-          x: rect.x + rect.width / 2,
-          y: rect.y + rect.height / 2,
-        },
-      })
+      (rect: RectangleNode, id): IPropsElement => {
+        const rectRotation = rect.rotation;
+        rotateOriginXY([rect], -rectRotation, 0.5, 0.5, '%', '%');
+        const rectData = {
+          id: `rect-${id}`,
+          data: {
+            width: rect.width,
+            height: rect.height,
+            x: rect.x + rect.width / 2,
+            y: rect.y + rect.height / 2,
+            rotation: -rectRotation * (Math.PI / 180),
+          },
+        };
+        rotateOriginXY([rect], rectRotation, 0.5, 0.5, '%', '%');
+        return rectData;
+      }
     );
     // Target
     const targetElement: IPropsElement = {

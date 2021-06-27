@@ -3,6 +3,7 @@ export interface IPropsElementData {
   height: number;
   x: number;
   y: number;
+  rotation?: number;
 }
 
 export interface IPropsElement {

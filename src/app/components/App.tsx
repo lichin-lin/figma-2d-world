@@ -61,7 +61,7 @@ const App = ({}) => {
       },
     });
 
-    const rectElement = elements.filter((e) => e.id.includes('rect'));
+    const rectElement = elements.filter((e) => e.id.includes('rect') || e.id.includes('Rect'));
     const rectList = [];
 
     rectElement.forEach((rect) => {
@@ -72,6 +72,7 @@ const App = ({}) => {
         },
         friction: 0,
       });
+      Body.rotate(body, rect.data.rotation ? rect.data.rotation : 0);
       rectList.push(body);
     });
     const targetElement = elements.find((e) => e.id === 'target');
@@ -198,33 +199,35 @@ const App = ({}) => {
 
   return (
     <div className="wrapper w-full h-full relative overflow-hidden">
-      <div className="flex space-x-2 w-full h-full bg-white items-center justify-center" onClick={handleOnClick}>
-        {targetState && focus ? (
-          <React.Fragment>
-            <KeyUI emoji={'👈'} text="Left(←)" active={status === 'ArrowLeft'} />
-            <KeyUI emoji={'🦵'} text="Jump(x)" active={jump} />
-            <KeyUI emoji={'👉'} text="Right(→)" active={status === 'ArrowRight'} />
-          </React.Fragment>
-        ) : (
-          <div className="text-gray-600 text-sm text-center">
-            {targetState ? (
-              <div>✌️ Now, click on this plugin window to start!</div>
-            ) : (
-              <div>
-                ☝️ Select element named:{' '}
-                <b>
-                  <i>target</i>
-                </b>{' '}
-                on Canvas
-                <br />
-                <p className="text-gray-600 text-xs">
-                  <i>(you will need to re-select if already seleted)</i>
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {!DEBUG && (
+        <div className="flex space-x-2 w-full h-full bg-white items-center justify-center" onClick={handleOnClick}>
+          {targetState && focus ? (
+            <React.Fragment>
+              <KeyUI emoji={'👈'} text="Left(←)" active={status === 'ArrowLeft'} />
+              <KeyUI emoji={'🦵'} text="Jump(x)" active={jump} />
+              <KeyUI emoji={'👉'} text="Right(→)" active={status === 'ArrowRight'} />
+            </React.Fragment>
+          ) : (
+            <div className="text-gray-600 text-sm text-center">
+              {targetState ? (
+                <div>✌️ Now, click on this plugin window to start!</div>
+              ) : (
+                <div>
+                  ☝️ Select element named:{' '}
+                  <b>
+                    <i>target</i>
+                  </b>{' '}
+                  on Canvas
+                  <br />
+                  <p className="text-gray-600 text-xs">
+                    <i>(you will need to re-select if already seleted)</i>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       {/* for debug usage */}
       <div
         className="debugger absolute"
