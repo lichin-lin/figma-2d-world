@@ -36,7 +36,7 @@ figma.ui.onmessage = (msg) => {
       const {x, y} = pos;
       if (x && y) {
         // set camera
-        if (Math.abs(target.x + target.width / 2 - x) + Math.abs(target.y + target.height / 2 - y) > 1) {
+        if (Math.abs(target.x + target.width / 2 - x) + Math.abs(target.y + target.height / 2 - y) > 2) {
           figma.viewport.scrollAndZoomIntoView([target]);
         }
         target.x = Math.floor(x - target.width / 2);
