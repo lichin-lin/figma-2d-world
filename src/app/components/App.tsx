@@ -127,9 +127,11 @@ const App = ({}) => {
       } else if (type === 'init-theme') {
         setTargetState(null);
         setupTheme(message);
+        Tracking.track('[Game] setup theme');
       } else if (type === 'remove-theme') {
         setTargetState(null);
         setFocus(false);
+        Tracking.track('[Game] remove theme');
       }
     };
   }, []);
@@ -175,6 +177,7 @@ const App = ({}) => {
       .pipe(filter((value: KeyboardEvent) => value.key === 'ArrowLeft' || value.key === 'ArrowRight'))
       .subscribe(() => {
         setStatus('STOP');
+        Tracking.track('[Game] Stop');
       });
     const jumps$ = fromEvent(document, 'keydown')
       .pipe(
@@ -183,6 +186,7 @@ const App = ({}) => {
       )
       .subscribe(() => {
         setJump(true);
+        Tracking.track('[Game] Jump');
         const _velocity = {
           x: targetState?.velocity?.x + mappingKeyEvent('Up', targetState.area)?.x,
           y: targetState?.velocity?.y + mappingKeyEvent('Up', targetState.area)?.y,
