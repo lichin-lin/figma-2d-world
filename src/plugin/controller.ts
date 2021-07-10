@@ -2,7 +2,7 @@ import Tracking from './tracking';
 import {IPropsElement} from '../app/interface';
 import {rotateOriginXY} from '../app/utils';
 
-figma.showUI(__html__, {width: 320, height: 100});
+figma.showUI(__html__, {width: 400, height: 120});
 
 // init: Setting tracking info / fetch storage
 const USER_DATA_ENDPOINT = 'user_data';

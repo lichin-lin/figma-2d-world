@@ -204,32 +204,51 @@ const App = ({}) => {
   return (
     <div className="wrapper w-full h-full relative overflow-hidden">
       {!DEBUG && (
-        <div className="flex space-x-2 w-full h-full bg-white items-center justify-center" onClick={handleOnClick}>
-          {targetState && focus ? (
-            <React.Fragment>
-              <KeyUI emoji={'👈'} text="Left(←)" active={status === 'ArrowLeft'} />
-              <KeyUI emoji={'🦵'} text="Jump(x)" active={jump} />
-              <KeyUI emoji={'👉'} text="Right(→)" active={status === 'ArrowRight'} />
-            </React.Fragment>
-          ) : (
-            <div className="text-gray-600 text-sm text-center">
-              {targetState ? (
-                <div>✌️ Now, click on this plugin window to start!</div>
-              ) : (
-                <div>
-                  ☝️ Select element named:{' '}
-                  <b>
-                    <i>target</i>
-                  </b>{' '}
-                  on Canvas
-                  <br />
-                  <p className="text-gray-600 text-xs">
-                    <i>(you will need to re-select if already seleted)</i>
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+        <div className="flex flex-col w-full h-full bg-white items-center justify-center" onClick={handleOnClick}>
+          <div className="flex space-x-2 w-full h-full bg-white items-center justify-center">
+            {targetState && focus ? (
+              <React.Fragment>
+                <KeyUI emoji={'👈'} text="Left(←)" active={status === 'ArrowLeft'} />
+                <KeyUI emoji={'🦵'} text="Jump(x)" active={jump} />
+                <KeyUI emoji={'👉'} text="Right(→)" active={status === 'ArrowRight'} />
+              </React.Fragment>
+            ) : (
+              <div className="text-gray-600 text-sm text-center">
+                {targetState ? (
+                  <div>✌️ Now, click on this plugin window to start!</div>
+                ) : (
+                  <div>
+                    ☝️ Select element named:{' '}
+                    <b>
+                      <i>target</i>
+                    </b>{' '}
+                    on Canvas
+                    <br />
+                    <p className="text-gray-600 text-xs">
+                      <i>(you will need to re-select if already seleted)</i>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex space-x-2 w-full h-8 bg-gray-100 justify-around items-center p-2">
+            <a
+              className="text-xs text-blue-400 cursor-pointer"
+              href="https://www.figma.com/community/file/990163780837139338/Figma-2D-World-Plugin-Template"
+              target="_blank"
+            >
+              Explore examples
+            </a>
+            <div className="text-xs text-gray-400">Made with ❤️ by Lichin</div>
+            <a
+              className="text-xs text-blue-400 cursor-pointer"
+              href="mailto:designtipstoday@gmail.com?subject=Feature request for Figma plugin 2D World"
+              target="_blank"
+            >
+              Feature request
+            </a>
+          </div>
         </div>
       )}
       {/* for debug usage */}
