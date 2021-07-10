@@ -2,7 +2,7 @@ import {KeyCode} from './keycodes';
 import {fromEvent, merge, combineLatest, Observable} from 'rxjs';
 import {distinctUntilChanged, share, filter} from 'rxjs/operators';
 
-const RATIO = 1.3;
+const RATIO = 1.2;
 const MOVERATIO = 0.8;
 export const mappingKeyEvent = (key: string, base: number = 6) => {
   const _base = Math.sqrt(Math.sqrt(base));

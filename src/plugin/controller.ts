@@ -63,7 +63,8 @@ figma.on('selectionchange', async () => {
       } else {
         magicZoomInRation = Math.sqrt(ratioView / 100) - 1;
       }
-      figma.viewport.zoom = figma.viewport.zoom + magicZoomInRation;
+      const _zoom = figma.viewport.zoom + magicZoomInRation;
+      figma.viewport.zoom = _zoom < 0 ? 0.01 : _zoom;
       ratioView = getRatio(target);
     }
     figma.viewport.scrollAndZoomIntoView([target]);

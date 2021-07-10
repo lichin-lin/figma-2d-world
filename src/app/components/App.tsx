@@ -16,8 +16,8 @@ let Body = Matter.Body;
 let World = Matter.World;
 let Bodies = Matter.Bodies;
 let Composite = Matter.Composite;
-let MouseConstraint = Matter.MouseConstraint;
-let Mouse = Matter.Mouse;
+// let MouseConstraint = Matter.MouseConstraint;
+// let Mouse = Matter.Mouse;
 let DEBUG = false;
 
 const KeyUI = ({emoji, text, active}: {emoji: string; text: string; active: boolean}) => {
@@ -60,7 +60,24 @@ const App = ({}) => {
         fillStyle: '#dcdcdc',
       },
     });
-
+    const wall1 = Bodies.rectangle(0, themeElement.data.height / 2, 10, themeElement.data.height, {
+      isStatic: true,
+      render: {
+        fillStyle: 'pink',
+      },
+    });
+    const wall2 = Bodies.rectangle(
+      themeElement.data.width,
+      themeElement.data.height / 2,
+      10,
+      themeElement.data.height,
+      {
+        isStatic: true,
+        render: {
+          fillStyle: 'pink',
+        },
+      }
+    );
     const rectElement = elements.filter((e) => e.id.includes('rect') || e.id.includes('Rect'));
     const rectList = [];
 
@@ -70,7 +87,11 @@ const App = ({}) => {
         render: {
           fillStyle: '#dcdcdc',
         },
-        friction: 0,
+        // friction: 0,
+        friction: 0.7,
+        frictionStatic: 10,
+        restitution: 0.2,
+        slop: 0.2,
       });
       Body.rotate(body, rect.data.rotation ? rect.data.rotation : 0);
       rectList.push(body);
@@ -82,7 +103,6 @@ const App = ({}) => {
       targetElement.data.width,
       targetElement.data.height,
       {
-        // restitution: 0,
         render: {
           fillStyle: 'tomato',
         },
@@ -93,24 +113,25 @@ const App = ({}) => {
     );
 
     setTargetState(target);
-    engine.world.gravity.y = 1;
-    World.add(engine.world, [floor, target]);
+    engine.world.gravity.y = 1.25;
+    World.add(engine.world, [floor, wall1, wall2]);
     Engine.run(engine);
     Render.run(render);
 
-    let mouse = Mouse.create(render.canvas),
-      mouseConstraint = MouseConstraint.create(engine, {
-        mouse: mouse,
-        constraint: {
-          stiffness: 0.2,
-          render: {
-            visible: false,
-          },
-        },
-      });
+    // let mouse = Mouse.create(render.canvas),
+    //   mouseConstraint = MouseConstraint.create(engine, {
+    //     mouse: mouse,
+    //     constraint: {
+    //       stiffness: 0.2,
+    //       render: {
+    //         visible: false,
+    //       },
+    //     },
+    //   });
     Composite.add(engine.world, rectList);
-    Composite.add(engine.world, mouseConstraint);
-    render.mouse = mouse;
+    Composite.add(engine.world, target);
+    // Composite.add(engine.world, mouseConstraint);
+    // render.mouse = mouse;
   };
   const handleOnClick = () => {
     setFocus(true);
@@ -158,10 +179,12 @@ const App = ({}) => {
   }, [jump]);
   React.useEffect(() => {
     const setPosSyncInterval = setInterval(() => {
-      parent.postMessage(
-        {pluginMessage: {type: 'set-target-pos', pos: {x: targetState?.position?.x, y: targetState?.position?.y}}},
-        '*'
-      );
+      if (targetState?.position) {
+        parent.postMessage(
+          {pluginMessage: {type: 'set-target-pos', pos: {x: targetState?.position?.x, y: targetState?.position?.y}}},
+          '*'
+        );
+      }
     }, 1000 / 100);
     return () => {
       clearInterval(setPosSyncInterval);
