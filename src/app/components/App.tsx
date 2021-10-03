@@ -1,3 +1,4 @@
+// https://stackoverflow.com/questions/65510727/the-matter-js-startcollision-is-not-working
 import * as React from 'react';
 import Tracking from '../../plugin/tracking';
 import Resizer from './Resizer';
@@ -153,9 +154,11 @@ const App = ({}) => {
         setTargetState(null);
         setFocus(false);
         Tracking.track('[Game] remove theme');
+      } else if (type === 'update-pos-for-plugin') {
+        Matter.Body.set(targetState, 'position', {x: message.x, y: message.y});
       }
     };
-  }, []);
+  }, [targetState]);
   React.useEffect(() => {
     const logger = setInterval(() => {
       if (status !== 'STOP') {

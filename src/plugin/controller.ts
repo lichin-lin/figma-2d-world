@@ -4,6 +4,27 @@ import {rotateOriginXY} from '../app/utils';
 
 figma.showUI(__html__, {width: 400, height: 120});
 
+const getElementPos = (element) => {
+  if (element) {
+    return {
+      x0: element.absoluteTransform[0][2],
+      x1: element.absoluteTransform[0][2] + element.width,
+      y0: element.absoluteTransform[1][2],
+      y1: element.absoluteTransform[1][2] + element.height,
+    };
+  }
+};
+
+const countElementInArea = (area, stamps) => {
+  let result = 0;
+  stamps.forEach((stamp) => {
+    if (stamp.x1 > area.x0 && stamp.x0 < area.x1 && stamp.y1 > area.y0 && stamp.y0 < area.y1) {
+      result += 1;
+    }
+  });
+  return result;
+};
+
 // init: Setting tracking info / fetch storage
 const USER_DATA_ENDPOINT = 'user_data';
 figma.clientStorage.getAsync(USER_DATA_ENDPOINT).then((data) => {
@@ -125,3 +146,37 @@ figma.on('selectionchange', async () => {
     message: [],
   });
 });
+
+const checkPortal = () => {
+  // get current pos
+  const target = figma?.currentPage?.selection[0];
+  const targetPos = getElementPos(target);
+  if (targetPos) {
+    const portalIns = target.parent.findChildren((b) => b.name.includes('in/'));
+    portalIns.forEach((portalIn) => {
+      const portalInPos = getElementPos(portalIn);
+      if (countElementInArea(portalInPos, [targetPos]) !== 0) {
+        console.log(`step in: ${portalIn.name}`);
+        const findOut = portalIn.name.split('/');
+        findOut[0] = 'out';
+        const portalOutName = findOut.join('/');
+        const portalOut = figma.currentPage.findOne((b) => b.name === portalOutName);
+        if (portalOut) {
+          target.x = portalOut.x;
+          target.y = portalOut.y;
+          figma.ui.postMessage({
+            type: 'update-pos-for-plugin',
+            message: {
+              x: portalOut.x,
+              y: portalOut.y,
+            },
+          });
+        }
+        return;
+      }
+    });
+  }
+};
+setInterval(() => {
+  checkPortal();
+}, 100);
